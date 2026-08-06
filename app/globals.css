@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------- */
+/* Design tokens — validated categorical/status palette, see the dataviz  */
+/* skill reference. Light values are default; dark values swap in under   */
+/* prefers-color-scheme so every `bg-surface` / `text-secondary` / etc.   */
+/* utility below responds to the OS setting automatically.                */
+/* ---------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  color-scheme: light;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --page-bg: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-hover: #f1f0ea;
+
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --text-success: #006300;
+
+  --border-color: rgba(11, 11, 11, 0.1);
+  --gridline: #e1e0d9;
+  --baseline: #c3c2b7;
+
+  --accent: #2a78d6;
+  --accent-hover: #1c5cab;
+  --accent-foreground: #ffffff;
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  --cat-food: #2a78d6;
+  --cat-transportation: #eb6834;
+  --cat-entertainment: #1baf7a;
+  --cat-shopping: #eda100;
+  --cat-bills: #e87ba4;
+  --cat-other: #008300;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+
+    --page-bg: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-hover: #242422;
+
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --text-success: #0ca30c;
+
+    --border-color: rgba(255, 255, 255, 0.1);
+    --gridline: #2c2c2a;
+    --baseline: #383835;
+
+    --accent: #3987e5;
+    --accent-hover: #6da7ec;
+    --accent-foreground: #ffffff;
+
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-serious: #ec835a;
+    --status-critical: #d03b3b;
+
+    --cat-food: #3987e5;
+    --cat-transportation: #d95926;
+    --cat-entertainment: #199e70;
+    --cat-shopping: #c98500;
+    --cat-bills: #d55181;
+    --cat-other: #008300;
   }
 }
 
+@theme inline {
+  --color-background: var(--page-bg);
+  --color-surface: var(--surface-1);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-success-text: var(--text-success);
+
+  --color-border: var(--border-color);
+  --color-gridline: var(--gridline);
+  --color-baseline: var(--baseline);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--status-good);
+  --color-warning: var(--status-warning);
+  --color-serious: var(--status-serious);
+  --color-danger: var(--status-critical);
+
+  --color-cat-food: var(--cat-food);
+  --color-cat-transportation: var(--cat-transportation);
+  --color-cat-entertainment: var(--cat-entertainment);
+  --color-cat-shopping: var(--cat-shopping);
+  --color-cat-bills: var(--cat-bills);
+  --color-cat-other: var(--cat-other);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-primary);
+}
+
+/* Native date/number inputs should track the design tokens, not the UA default. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
