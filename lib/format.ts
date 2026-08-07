@@ -45,3 +45,28 @@ export function isoDaysAgo(days: number): string {
 export function monthKey(isoDate: string): string {
   return isoDate.slice(0, 7);
 }
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+/** "2 minutes ago" / "in 3 days", from an ISO timestamp relative to now. */
+export function formatRelativeTime(iso: string): string {
+  const diffMs = new Date(iso).getTime() - Date.now();
+  const diffSeconds = Math.round(diffMs / 1000);
+  const absSeconds = Math.abs(diffSeconds);
+
+  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+    ["year", 31536000],
+    ["month", 2592000],
+    ["week", 604800],
+    ["day", 86400],
+    ["hour", 3600],
+    ["minute", 60],
+  ];
+
+  for (const [unit, seconds] of units) {
+    if (absSeconds >= seconds) {
+      return relativeTimeFormatter.format(Math.round(diffSeconds / seconds), unit);
+    }
+  }
+  return relativeTimeFormatter.format(diffSeconds, "second");
+}

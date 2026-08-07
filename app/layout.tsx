@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { Header } from "@/components/layout/Header";
+import { ScheduledBackupRunner } from "@/components/export-hub/ScheduledBackupRunner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <Header />
         <main className="flex-1">{children}</main>
+        <ScheduledBackupRunner />
         <Toaster
           position="bottom-right"
           toastOptions={{

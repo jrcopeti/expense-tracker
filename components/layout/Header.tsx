@@ -3,19 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { LayoutDashboard, Receipt, Menu, X, Hourglass, Settings } from "lucide-react";
+import { LayoutDashboard, Receipt, Share2, Menu, X, Hourglass, Settings } from "lucide-react";
 import clsx from "clsx";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 
 const NAV_LINKS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/expenses", label: "Expenses", icon: Receipt },
+  { href: "/export", label: "Export", icon: Share2 },
 ] as const;
 
 export function Header() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Shared-report pages are meant to be openable by anyone with the link,
+  // with no assumption they use (or want to see) the full app - they get
+  // their own minimal branding instead of the main nav shell.
+  if (pathname?.startsWith("/shared")) return null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/70">
