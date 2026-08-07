@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Wallet, Receipt, TrendingUp, Sparkles, Settings as SettingsIcon } from "lucide-react";
+import { Wallet, Receipt, TrendingUp, Sparkles, Settings as SettingsIcon, Download } from "lucide-react";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -27,6 +28,7 @@ import {
 } from "@/lib/expense-utils";
 import { amountToHours, formatHours } from "@/lib/time-cost";
 import { formatCurrency, formatCurrencyCompact } from "@/lib/format";
+import { exportExpensesToCsv } from "@/lib/csv";
 import type { Expense } from "@/lib/types";
 
 const HEATMAP_DAYS = 182; // ~26 weeks, GitHub-graph-style
@@ -58,6 +60,11 @@ export default function DashboardPage() {
     if (!isConfigured) updateSettings({ hourlyWage: 32 });
   }
 
+  function handleExportData() {
+    exportExpensesToCsv(expenses);
+    toast.success(`Exported ${expenses.length} expense${expenses.length === 1 ? "" : "s"} to CSV`);
+  }
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -79,6 +86,10 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-sm text-secondary">Every dollar, measured in the hours it cost you.</p>
         </div>
+        <Button variant="secondary" onClick={handleExportData}>
+          <Download className="h-4 w-4" />
+          Export Data
+        </Button>
       </div>
 
       <div className="mt-6">
