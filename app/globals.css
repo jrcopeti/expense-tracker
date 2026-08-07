@@ -136,3 +136,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* Export drawer slide-in (see components/export/ExportDrawer.tsx). Plain CSS,
+   not JS-driven, so there's no mount-triggered setState involved. */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
