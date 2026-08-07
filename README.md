@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hourglass — Spend Time Wisely
 
-## Getting Started
+Most expense trackers make you do bookkeeping and hope a pie chart changes your
+behavior. Hourglass tries something different: it converts every dollar into
+the **hours of your life** it cost, and leads with that instead of a total.
+Everything else follows from that one idea.
 
-First, run the development server:
+All data lives in your browser's `localStorage` - no backend, no account.
+
+## What's different here
+
+- **Time, not just money.** Set your hourly rate (directly, or calculated from
+  monthly income) once, and every expense, category, and monthly total is
+  shown in hours-of-work alongside its dollar amount. The dashboard's hero
+  number is *"This month cost you 12h 9m"*, not a dollar total.
+- **Type it like you'd say it.** The primary way to log a expense is one line
+  of free text - `"12.50 coffee"`, `"gas 40 yesterday"`, `"lunch with sara
+  9.75"`. A small on-device parser guesses the amount, category, and date;
+  logging is instant, and a toast lets you fix a bad guess in one click. (A
+  full field-by-field form is always one click away too, for anyone who
+  prefers it.)
+- **A spending heatmap, not a bar chart.** The dashboard leads with a
+  GitHub-contributions-style calendar of the last 6 months - click any day to
+  see (and edit) exactly what you spent, right inline.
+- **Streaks.** Set an optional daily budget and Hourglass tracks your current
+  streak of days at or under it - a no-spend day counts as a win.
+- **"Where your time goes"** - a category breakdown in hours of work, not
+  dollars, so you can see at a glance what's actually eating your life.
+
+Categories, search/filter/sort, edit/delete, CSV export (now with an Hours
+column), validation, responsive layout, and light/dark mode are all still
+here - the full-featured tracker is intact underneath the new framing.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). On first load, click
+**Load sample data** to see six months of activity immediately (it also sets
+a demo hourly rate so the time-cost framing is visible right away) - or just
+start typing into the quick-add box.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm run start   # run the production build
+npm run lint    # ESLint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Manually testing everything
 
-## Learn More
+1. **Quick capture** - type `"14.50 lunch with sara"` into the box at the top
+   and hit *Log it*. A toast confirms the parsed amount/category/description
+   and its time cost, with an *Edit* link if the guess needs fixing. Try a
+   line with no number in it (e.g. `"just coffee"`) - it should show an inline
+   error and add nothing.
+2. **Settings** - click the gear icon. Toggle between "Calculate it" (monthly
+   income + hours/week) and "I know my rate" (direct hourly figure); the
+   preview line updates live. Set a daily budget and save - a streak badge
+   should appear on the dashboard.
+3. **Heatmap** - click any colored day in "Spending rhythm" to open its detail
+   panel below, showing every expense logged that day with an edit shortcut.
+   Click the same day again to close it.
+4. **Full form, edit, delete** - use the list icon next to *Log it* to open
+   the complete form (with a live "≈ this many minutes of your life" preview
+   as you type an amount). Edit or delete any row from the Expenses table.
+5. **Filters & export** - search, filter by category/date range, sort, then
+   export - the CSV includes exactly the filtered rows plus an Hours column.
+6. **Responsiveness** - resize the window; the heatmap scrolls horizontally,
+   the table becomes cards, and the nav collapses into a hamburger menu.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  page.tsx              Dashboard (hero, streak, heatmap, category-hours chart)
+  expenses/page.tsx      Full list: quick-capture, filters, table, CSV export
+  layout.tsx             Root layout (nav, toaster)
+components/
+  dashboard/              StatCard, HeatmapCalendar, CategoryTimeChart, DayDetail, StreakBadge
+  expenses/                QuickCapture, ExpenseFormModal, FilterBar, ExpenseList, CategoryBadge
+  settings/                SettingsModal (hourly rate / income, daily budget)
+  layout/                  Header/nav
+  ui/                      Button, Card, Field, EmptyState, Skeleton, ConfirmDialog, Portal
+hooks/
+  useExpenses.ts, useSettings.ts   useSyncExternalStore-backed, no Context needed
+lib/
+  time-cost.ts             The core reframe: dollars -> hours of work
+  parse-expense.ts         The free-text quick-capture parser
+  expenseStore.ts, settingsStore.ts, storage.ts, csv.ts, format.ts, validation.ts,
+  expense-utils.ts (incl. heatmap bucketing + streak calc), types.ts, categories.ts
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- All overlays (modals, confirm dialogs) render through a `Portal` into
+  `document.body`. The header uses `backdrop-blur`, and per the CSS spec that
+  creates a new containing block for `position: fixed` descendants - without
+  the portal, a modal nested under the header would position itself relative
+  to the header's small box instead of the viewport.
+- Category and heatmap colors follow a colorblind-validated palette (each
+  category keeps one consistent color everywhere); "Hourglass" itself uses a
+  warm sand accent, contrast-checked against its own foreground.
+- Built on Next.js 16 with Turbopack; see `AGENTS.md` if upgrading further.
