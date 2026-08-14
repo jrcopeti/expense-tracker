@@ -1,11 +1,13 @@
-import type { Expense } from "./types";
+import type { Expense, Settings } from "./types";
+import { DEFAULT_SETTINGS } from "./types";
 
-const STORAGE_KEY = "expense-tracker:expenses:v1";
+const EXPENSES_KEY = "hourglass:expenses:v1";
+const SETTINGS_KEY = "hourglass:settings:v1";
 
 export function loadExpenses(): Expense[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(EXPENSES_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -19,7 +21,30 @@ export function loadExpenses(): Expense[] {
 export function saveExpenses(expenses: Expense[]): boolean {
   if (typeof window === "undefined") return false;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+    window.localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function loadSettings(): Settings {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS;
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return DEFAULT_SETTINGS;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return DEFAULT_SETTINGS;
+    return { ...DEFAULT_SETTINGS, ...parsed };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+export function saveSettings(settings: Settings): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     return true;
   } catch {
     return false;

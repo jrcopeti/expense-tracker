@@ -19,10 +19,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 
 export function FilterBar({ filters, onChange }: FilterBarProps) {
   const isActive =
-    filters.search !== "" ||
-    filters.category !== "All" ||
-    filters.startDate !== "" ||
-    filters.endDate !== "";
+    filters.search !== "" || filters.category !== "All" || filters.startDate !== "" || filters.endDate !== "";
 
   function set<K extends keyof ExpenseFilters>(key: K, value: ExpenseFilters[K]) {
     onChange({ ...filters, [key]: value });

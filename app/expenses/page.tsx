@@ -1,21 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FilterBar } from "@/components/expenses/FilterBar";
 import { ExpenseList } from "@/components/expenses/ExpenseList";
 import { ExpenseFormModal } from "@/components/expenses/ExpenseFormModal";
-import { useExpenses } from "@/context/ExpenseContext";
+import { QuickCapture } from "@/components/expenses/QuickCapture";
+import { useExpenses } from "@/hooks/useExpenses";
+import { useSettings } from "@/hooks/useSettings";
 import { filterExpenses, sumAmount } from "@/lib/expense-utils";
 import { DEFAULT_FILTERS, type Expense, type ExpenseFilters } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { formatTimeCost } from "@/lib/time-cost";
 import { downloadCsv } from "@/lib/csv";
 
 export default function ExpensesPage() {
-  const { expenses, isLoading } = useExpenses();
+  const { expenses, isLoading: expensesLoading } = useExpenses();
+  const { settings, isLoading: settingsLoading } = useSettings();
+  const isLoading = expensesLoading || settingsLoading;
   const [filters, setFilters] = useState<ExpenseFilters>(DEFAULT_FILTERS);
   const [modalState, setModalState] = useState<{ open: boolean; expense?: Expense }>({ open: false });
 
@@ -27,7 +32,7 @@ export default function ExpensesPage() {
       toast.error("Nothing to export with the current filters");
       return;
     }
-    downloadCsv(filtered);
+    downloadCsv(filtered, settings);
     toast.success(`Exported ${filtered.length} expense${filtered.length === 1 ? "" : "s"} to CSV`);
   }
 
@@ -39,19 +44,17 @@ export default function ExpensesPage() {
           <p className="mt-1 text-sm text-secondary">
             {isLoading
               ? "Loading..."
-              : `${filtered.length} of ${expenses.length} expense${expenses.length === 1 ? "" : "s"} · ${formatCurrency(filteredTotal)} total`}
+              : `${filtered.length} of ${expenses.length} expense${expenses.length === 1 ? "" : "s"} · ${formatCurrency(filteredTotal)} · ≈ ${formatTimeCost(filteredTotal, settings)}`}
           </p>
         </div>
-        <div className="flex gap-2.5">
-          <Button variant="secondary" onClick={handleExport}>
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-          <Button onClick={() => setModalState({ open: true })}>
-            <Plus className="h-4 w-4" />
-            Add expense
-          </Button>
-        </div>
+        <Button variant="secondary" onClick={handleExport}>
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
+      </div>
+
+      <div className="mt-6">
+        <QuickCapture onOpenForm={(expense) => setModalState({ open: true, expense })} />
       </div>
 
       <div className="mt-6">
@@ -69,6 +72,7 @@ export default function ExpensesPage() {
           <ExpenseList
             expenses={filtered}
             totalCount={expenses.length}
+            settings={settings}
             onEdit={(expense) => setModalState({ open: true, expense })}
           />
         )}

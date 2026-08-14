@@ -1,22 +1,35 @@
-# Clarity — Expense Tracker
+# Hourglass — Spend Time Wisely
 
-A modern, responsive expense tracker built with Next.js (App Router), TypeScript,
-Tailwind CSS, and Recharts. All data is stored in your browser's `localStorage` —
-there is no backend or account, so it's yours alone and never leaves your machine.
+Most expense trackers make you do bookkeeping and hope a pie chart changes your
+behavior. Hourglass tries something different: it converts every dollar into
+the **hours of your life** it cost, and leads with that instead of a total.
+Everything else follows from that one idea.
 
-## Features
+All data lives in your browser's `localStorage` - no backend, no account.
 
-- **Dashboard** — total spending, this-month spend (with a vs-last-month delta),
-  transaction count, top category, a category breakdown chart, a 6-month spending
-  trend chart, and a recent-activity list.
-- **Expenses** — add, edit, and delete expenses; search by description; filter by
-  category and date range; sort by date or amount; export the current view to CSV.
-- **Validation** — every field is validated (required amount > 0, required date not
-  in the future, required category, required description) with inline errors.
-- **Responsive** — a data table on desktop/tablet, stacked cards on mobile, and a
-  collapsible nav menu on small screens.
-- **Sample data** — from an empty dashboard, click "Load sample data" to explore
-  the app with ~6 months of realistic expenses instead of starting from scratch.
+## What's different here
+
+- **Time, not just money.** Set your hourly rate (directly, or calculated from
+  monthly income) once, and every expense, category, and monthly total is
+  shown in hours-of-work alongside its dollar amount. The dashboard's hero
+  number is *"This month cost you 12h 9m"*, not a dollar total.
+- **Type it like you'd say it.** The primary way to log a expense is one line
+  of free text - `"12.50 coffee"`, `"gas 40 yesterday"`, `"lunch with sara
+  9.75"`. A small on-device parser guesses the amount, category, and date;
+  logging is instant, and a toast lets you fix a bad guess in one click. (A
+  full field-by-field form is always one click away too, for anyone who
+  prefers it.)
+- **A spending heatmap, not a bar chart.** The dashboard leads with a
+  GitHub-contributions-style calendar of the last 6 months - click any day to
+  see (and edit) exactly what you spent, right inline.
+- **Streaks.** Set an optional daily budget and Hourglass tracks your current
+  streak of days at or under it - a no-spend day counts as a win.
+- **"Where your time goes"** - a category breakdown in hours of work, not
+  dollars, so you can see at a glance what's actually eating your life.
+
+Categories, search/filter/sort, edit/delete, CSV export (now with an Hours
+column), validation, responsive layout, and light/dark mode are all still
+here - the full-featured tracker is intact underneath the new framing.
 
 ## Getting started
 
@@ -25,68 +38,69 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The dashboard starts empty —
-click **Load sample data** to populate it instantly, or **Add expense** to enter
-your own.
-
-Other scripts:
+Open [http://localhost:3000](http://localhost:3000). On first load, click
+**Load sample data** to see six months of activity immediately (it also sets
+a demo hourly rate so the time-cost framing is visible right away) - or just
+start typing into the quick-add box.
 
 ```bash
 npm run build   # production build
-npm run start   # run the production build (after `npm run build`)
+npm run start   # run the production build
 npm run lint    # ESLint
 ```
 
-## Manually testing every feature
+## Manually testing everything
 
-1. **Empty state** — on first load (or after clearing `localStorage`), the
-   dashboard shows a "Welcome to Clarity" empty state with two actions.
-2. **Sample data** — click "Load sample data"; the dashboard should populate with
-   25 expenses, stat cards, and both charts.
-3. **Add an expense** — go to *Expenses* → *Add expense*. Try submitting empty to
-   see validation errors; then fill in a date, amount, category, and description
-   and submit — a success toast appears and the row shows up at the top.
-4. **Edit** — hover a row (or, on mobile, just tap) and click the pencil icon;
-   change a field and save.
-5. **Delete** — click the trash icon; confirm in the dialog; the row disappears
-   and a toast confirms it.
-6. **Search & filter** — type in the search box to filter by description; pick a
-   category; set a date range; change the sort order. The header count/total
-   updates to match the filtered set. "Clear filters" resets everything.
-7. **Export CSV** — with any filter combination applied, click "Export CSV" — it
-   downloads exactly the filtered/sorted rows you're looking at.
-8. **Dashboard charts** — hover the category bars or the trend line to see
-   tooltips with exact amounts.
-9. **Responsiveness** — resize the window (or open dev tools' device toolbar):
-   the stat grid, charts, and expense list all reflow, and the nav collapses into
-   a hamburger menu under `sm` width.
-10. **Persistence** — refresh the page; your data is read back from
-    `localStorage` (skeletons appear only for a moment while that resolves).
+1. **Quick capture** - type `"14.50 lunch with sara"` into the box at the top
+   and hit *Log it*. A toast confirms the parsed amount/category/description
+   and its time cost, with an *Edit* link if the guess needs fixing. Try a
+   line with no number in it (e.g. `"just coffee"`) - it should show an inline
+   error and add nothing.
+2. **Settings** - click the gear icon. Toggle between "Calculate it" (monthly
+   income + hours/week) and "I know my rate" (direct hourly figure); the
+   preview line updates live. Set a daily budget and save - a streak badge
+   should appear on the dashboard.
+3. **Heatmap** - click any colored day in "Spending rhythm" to open its detail
+   panel below, showing every expense logged that day with an edit shortcut.
+   Click the same day again to close it.
+4. **Full form, edit, delete** - use the list icon next to *Log it* to open
+   the complete form (with a live "≈ this many minutes of your life" preview
+   as you type an amount). Edit or delete any row from the Expenses table.
+5. **Filters & export** - search, filter by category/date range, sort, then
+   export - the CSV includes exactly the filtered rows plus an Hours column.
+6. **Responsiveness** - resize the window; the heatmap scrolls horizontally,
+   the table becomes cards, and the nav collapses into a hamburger menu.
 
 ## Project structure
 
 ```
 app/
-  page.tsx              Dashboard route
-  expenses/page.tsx      Expenses route
-  layout.tsx             Root layout (nav, providers, toaster)
-  globals.css             Design tokens (light/dark, categorical palette)
+  page.tsx              Dashboard (hero, streak, heatmap, category-hours chart)
+  expenses/page.tsx      Full list: quick-capture, filters, table, CSV export
+  layout.tsx             Root layout (nav, toaster)
 components/
-  dashboard/              Stat cards, charts, recent-expenses list
-  expenses/                Filter bar, list/table, add-edit modal, category badge
+  dashboard/              StatCard, HeatmapCalendar, CategoryTimeChart, DayDetail, StreakBadge
+  expenses/                QuickCapture, ExpenseFormModal, FilterBar, ExpenseList, CategoryBadge
+  settings/                SettingsModal (hourly rate / income, daily budget)
   layout/                  Header/nav
-  ui/                      Button, Card, Field, EmptyState, Skeleton, ConfirmDialog
-context/
-  ExpenseContext.tsx       React context wrapping the expense store
+  ui/                      Button, Card, Field, EmptyState, Skeleton, ConfirmDialog, Portal
+hooks/
+  useExpenses.ts, useSettings.ts   useSyncExternalStore-backed, no Context needed
 lib/
-  expenseStore.ts          Vanilla store (useSyncExternalStore-backed) + localStorage
-  storage.ts, csv.ts, format.ts, validation.ts, expense-utils.ts, types.ts, categories.ts
+  time-cost.ts             The core reframe: dollars -> hours of work
+  parse-expense.ts         The free-text quick-capture parser
+  expenseStore.ts, settingsStore.ts, storage.ts, csv.ts, format.ts, validation.ts,
+  expense-utils.ts (incl. heatmap bucketing + streak calc), types.ts, categories.ts
 ```
 
 ## Notes
 
-- Category colors and chart styling follow a colorblind-validated palette (each
-  category keeps the same color everywhere — badges, table, charts).
-- Light/dark mode follows your OS setting automatically.
-- Built on Next.js 16 with Turbopack; see `AGENTS.md` if you're upgrading Next.js
-  further, since this major version has notable breaking changes from earlier ones.
+- All overlays (modals, confirm dialogs) render through a `Portal` into
+  `document.body`. The header uses `backdrop-blur`, and per the CSS spec that
+  creates a new containing block for `position: fixed` descendants - without
+  the portal, a modal nested under the header would position itself relative
+  to the header's small box instead of the viewport.
+- Category and heatmap colors follow a colorblind-validated palette (each
+  category keeps one consistent color everywhere); "Hourglass" itself uses a
+  warm sand accent, contrast-checked against its own foreground.
+- Built on Next.js 16 with Turbopack; see `AGENTS.md` if upgrading further.

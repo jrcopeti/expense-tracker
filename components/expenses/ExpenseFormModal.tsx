@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Field, fieldClasses } from "@/components/ui/Field";
-import { useExpenses } from "@/context/ExpenseContext";
+import { Portal } from "@/components/ui/Portal";
+import { useExpenses } from "@/hooks/useExpenses";
+import { useSettings } from "@/hooks/useSettings";
 import { CATEGORIES, type Expense } from "@/lib/types";
 import { todayIso } from "@/lib/format";
+import { formatTimeCost } from "@/lib/time-cost";
 import { validateExpense, toExpenseInput, type ExpenseFormValues, type FormErrors } from "@/lib/validation";
 
 interface ExpenseFormModalProps {
@@ -16,12 +19,7 @@ interface ExpenseFormModalProps {
   expense?: Expense;
 }
 
-const EMPTY_VALUES: ExpenseFormValues = {
-  date: "",
-  amount: "",
-  category: "",
-  description: "",
-};
+const EMPTY_VALUES: ExpenseFormValues = { date: "", amount: "", category: "", description: "" };
 
 function valuesFromExpense(expense?: Expense): ExpenseFormValues {
   if (!expense) return { ...EMPTY_VALUES, date: todayIso() };
@@ -38,9 +36,9 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
   // remounts it (via a `key`) when switching between add/edit targets - so
   // this lazy initializer is all that's needed to start each dialog fresh.
   const { addExpense, updateExpense } = useExpenses();
+  const { settings } = useSettings();
   const [values, setValues] = useState<ExpenseFormValues>(() => valuesFromExpense(expense));
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const isEditing = Boolean(expense);
@@ -57,6 +55,12 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
+  const timeCost = useMemo(() => {
+    const amount = Number(values.amount);
+    if (!(amount > 0)) return null;
+    return formatTimeCost(amount, settings);
+  }, [values.amount, settings]);
+
   function handleChange<K extends keyof ExpenseFormValues>(key: K, value: string) {
     setValues((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -70,7 +74,6 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
       return;
     }
 
-    setIsSubmitting(true);
     const input = toExpenseInput(values);
     if (isEditing && expense) {
       updateExpense(expense.id, input);
@@ -79,18 +82,18 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
       addExpense(input);
       toast.success("Expense added");
     }
-    setIsSubmitting(false);
     onClose();
   }
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl"
+        className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 id={titleId} className="text-lg font-semibold">
@@ -118,15 +121,12 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
                 onChange={(e) => handleChange("date", e.target.value)}
                 className={fieldClasses(Boolean(errors.date))}
                 aria-invalid={Boolean(errors.date)}
-                aria-describedby={errors.date ? "expense-date-error" : undefined}
               />
             </Field>
 
-            <Field label="Amount" htmlFor="expense-amount" error={errors.amount}>
+            <Field label="Amount" htmlFor="expense-amount" error={errors.amount} hint={timeCost ? `≈ ${timeCost} of your life` : undefined}>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">
-                  $
-                </span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">$</span>
                 <input
                   id="expense-amount"
                   type="number"
@@ -138,7 +138,6 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
                   onChange={(e) => handleChange("amount", e.target.value)}
                   className={fieldClasses(Boolean(errors.amount)) + " pl-6"}
                   aria-invalid={Boolean(errors.amount)}
-                  aria-describedby={errors.amount ? "expense-amount-error" : undefined}
                 />
               </div>
             </Field>
@@ -173,7 +172,6 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
               maxLength={140}
               className={fieldClasses(Boolean(errors.description))}
               aria-invalid={Boolean(errors.description)}
-              aria-describedby={errors.description ? "expense-description-error" : undefined}
             />
           </Field>
 
@@ -181,12 +179,11 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isEditing ? "Save changes" : "Add expense"}
-            </Button>
+            <Button type="submit">{isEditing ? "Save changes" : "Add expense"}</Button>
           </div>
         </form>
       </div>
     </div>
+    </Portal>
   );
 }

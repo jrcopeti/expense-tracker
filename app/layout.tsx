@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
-import { ExpenseProvider } from "@/context/ExpenseContext";
 import { Header } from "@/components/layout/Header";
 import "./globals.css";
 
@@ -16,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Clarity — Expense Tracker",
-  description: "Track spending, spot trends, and stay on budget.",
+  title: "Hourglass — Spend Time Wisely",
+  description: "An expense tracker that measures spending in hours of your life, not just dollars.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,12 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <ExpenseProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-        </ExpenseProvider>
+        <Header />
+        <main className="flex-1">{children}</main>
         <Toaster
           position="bottom-right"
           toastOptions={{
@@ -40,18 +38,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               border: "1px solid var(--border-color)",
               boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             },
-            success: {
-              iconTheme: {
-                primary: "var(--status-good)",
-                secondary: "var(--surface-1)",
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: "var(--status-critical)",
-                secondary: "var(--surface-1)",
-              },
-            },
+            success: { iconTheme: { primary: "var(--status-good)", secondary: "var(--surface-1)" } },
+            error: { iconTheme: { primary: "var(--status-critical)", secondary: "var(--surface-1)" } },
           }}
         />
       </body>

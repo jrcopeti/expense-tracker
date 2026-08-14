@@ -6,17 +6,19 @@ import toast from "react-hot-toast";
 import { CategoryBadge } from "@/components/expenses/CategoryBadge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useExpenses } from "@/context/ExpenseContext";
+import { useExpenses } from "@/hooks/useExpenses";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { Expense } from "@/lib/types";
+import { formatTimeCost } from "@/lib/time-cost";
+import type { Expense, Settings } from "@/lib/types";
 
 interface ExpenseListProps {
   expenses: Expense[];
   totalCount: number;
+  settings: Settings;
   onEdit: (expense: Expense) => void;
 }
 
-export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) {
+export function ExpenseList({ expenses, totalCount, settings, onEdit }: ExpenseListProps) {
   const { deleteExpense } = useExpenses();
   const [pendingDelete, setPendingDelete] = useState<Expense | null>(null);
 
@@ -32,7 +34,7 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
       <EmptyState
         icon={Receipt}
         title="No expenses yet"
-        description="Add your first expense to start tracking your spending."
+        description="Use the quick-add box above to log your first one."
       />
     );
   }
@@ -49,7 +51,6 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
 
   return (
     <>
-      {/* Desktop / tablet: table */}
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-surface sm:block">
         <table className="w-full text-sm">
           <thead>
@@ -58,6 +59,7 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
               <th className="px-5 py-3 font-medium">Category</th>
               <th className="px-5 py-3 font-medium">Description</th>
               <th className="px-5 py-3 text-right font-medium">Amount</th>
+              <th className="px-5 py-3 text-right font-medium">Time cost</th>
               <th className="px-5 py-3 text-right font-medium">
                 <span className="sr-only">Actions</span>
               </th>
@@ -65,13 +67,8 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
           </thead>
           <tbody>
             {expenses.map((expense) => (
-              <tr
-                key={expense.id}
-                className="group border-b border-border last:border-0 hover:bg-surface-hover"
-              >
-                <td className="whitespace-nowrap px-5 py-3.5 text-secondary tabular-nums">
-                  {formatDate(expense.date)}
-                </td>
+              <tr key={expense.id} className="group border-b border-border last:border-0 hover:bg-surface-hover">
+                <td className="whitespace-nowrap px-5 py-3.5 text-secondary tabular-nums">{formatDate(expense.date)}</td>
                 <td className="px-5 py-3.5">
                   <CategoryBadge category={expense.category} size="sm" />
                 </td>
@@ -79,15 +76,13 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
                 <td className="whitespace-nowrap px-5 py-3.5 text-right font-medium tabular-nums text-foreground">
                   {formatCurrency(expense.amount)}
                 </td>
+                <td className="whitespace-nowrap px-5 py-3.5 text-right text-secondary tabular-nums">
+                  {formatTimeCost(expense.amount, settings)}
+                </td>
                 <td className="px-5 py-3.5">
                   <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     <RowAction icon={Pencil} label="Edit expense" onClick={() => onEdit(expense)} />
-                    <RowAction
-                      icon={Trash2}
-                      label="Delete expense"
-                      onClick={() => setPendingDelete(expense)}
-                      danger
-                    />
+                    <RowAction icon={Trash2} label="Delete expense" onClick={() => setPendingDelete(expense)} danger />
                   </div>
                 </td>
               </tr>
@@ -96,27 +91,21 @@ export function ExpenseList({ expenses, totalCount, onEdit }: ExpenseListProps) 
         </table>
       </div>
 
-      {/* Mobile: stacked cards */}
       <ul className="flex flex-col gap-3 sm:hidden">
         {expenses.map((expense) => (
           <li key={expense.id} className="rounded-2xl border border-border bg-surface p-4">
             <div className="flex items-start justify-between gap-3">
               <CategoryBadge category={expense.category} />
-              <span className="font-semibold tabular-nums text-foreground">
-                {formatCurrency(expense.amount)}
-              </span>
+              <span className="font-semibold tabular-nums text-foreground">{formatCurrency(expense.amount)}</span>
             </div>
             <p className="mt-2.5 text-sm text-foreground">{expense.description}</p>
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-secondary tabular-nums">{formatDate(expense.date)}</span>
+              <span className="text-xs text-secondary tabular-nums">
+                {formatDate(expense.date)} · {formatTimeCost(expense.amount, settings)}
+              </span>
               <div className="flex gap-1">
                 <RowAction icon={Pencil} label="Edit expense" onClick={() => onEdit(expense)} />
-                <RowAction
-                  icon={Trash2}
-                  label="Delete expense"
-                  onClick={() => setPendingDelete(expense)}
-                  danger
-                />
+                <RowAction icon={Trash2} label="Delete expense" onClick={() => setPendingDelete(expense)} danger />
               </div>
             </div>
           </li>

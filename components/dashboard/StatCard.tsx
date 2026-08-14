@@ -23,12 +23,7 @@ export function StatCard({ label, value, icon: Icon, hint, delta }: StatCardProp
       {(hint || delta) && (
         <p className="flex items-center gap-1.5 text-xs text-muted">
           {delta && (
-            <span
-              className={clsx(
-                "font-medium",
-                delta.isGood ? "text-success-text" : "text-danger",
-              )}
-            >
+            <span className={clsx("font-medium", delta.isGood ? "text-success-text" : "text-danger")}>
               {delta.direction === "up" ? "↑" : "↓"} {delta.value}
             </span>
           )}

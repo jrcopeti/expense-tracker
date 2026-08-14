@@ -14,9 +14,8 @@ interface CategoryMeta {
   icon: LucideIcon;
   /** CSS custom property that resolves to the right hex for the active color scheme. */
   cssVar: string;
-  /** Raw hex values, used where an SVG fill attribute needs a concrete value (charts). */
-  light: string;
-  dark: string;
+  /** Keywords the quick-capture parser matches against (lowercase, longest-first). */
+  keywords: string[];
 }
 
 export const CATEGORY_META: Record<Category, CategoryMeta> = {
@@ -24,42 +23,52 @@ export const CATEGORY_META: Record<Category, CategoryMeta> = {
     label: "Food",
     icon: Utensils,
     cssVar: "var(--cat-food)",
-    light: "#2a78d6",
-    dark: "#3987e5",
+    keywords: [
+      "coffee", "lunch", "dinner", "breakfast", "brunch", "grocery", "groceries",
+      "restaurant", "snack", "food", "cafe", "takeout", "pizza", "sushi", "bar",
+      "drinks", "starbucks", "trader joe", "whole foods", "doordash", "ubereats",
+    ],
   },
   Transportation: {
     label: "Transportation",
     icon: Car,
     cssVar: "var(--cat-transportation)",
-    light: "#eb6834",
-    dark: "#d95926",
+    keywords: [
+      "uber", "lyft", "gas", "fuel", "parking", "taxi", "train", "bus", "transit",
+      "flight", "car", "toll", "subway", "metro", "rideshare",
+    ],
   },
   Entertainment: {
     label: "Entertainment",
     icon: Film,
     cssVar: "var(--cat-entertainment)",
-    light: "#1baf7a",
-    dark: "#199e70",
+    keywords: [
+      "movie", "concert", "netflix", "spotify", "game", "tickets", "show",
+      "bowling", "streaming", "hulu", "disney+", "steam",
+    ],
   },
   Shopping: {
     label: "Shopping",
     icon: ShoppingBag,
     cssVar: "var(--cat-shopping)",
-    light: "#eda100",
-    dark: "#c98500",
+    keywords: [
+      "amazon", "clothes", "clothing", "shoes", "jacket", "shopping", "mall",
+      "store", "target", "ikea",
+    ],
   },
   Bills: {
     label: "Bills",
     icon: Receipt,
     cssVar: "var(--cat-bills)",
-    light: "#e87ba4",
-    dark: "#d55181",
+    keywords: [
+      "rent", "electricity", "water bill", "internet", "phone bill", "insurance",
+      "bill", "subscription", "utilities", "mortgage",
+    ],
   },
   Other: {
     label: "Other",
     icon: MoreHorizontal,
     cssVar: "var(--cat-other)",
-    light: "#008300",
-    dark: "#008300",
+    keywords: [],
   },
 };

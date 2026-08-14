@@ -1,5 +1,5 @@
 import { CATEGORIES, type Category, type Expense, type ExpenseFilters } from "./types";
-import { monthKey } from "./format";
+import { monthKey, todayIso } from "./format";
 
 export function filterExpenses(expenses: Expense[], filters: ExpenseFilters): Expense[] {
   const search = filters.search.trim().toLowerCase();
@@ -33,7 +33,7 @@ export function sumAmount(expenses: Expense[]): number {
 }
 
 export function currentMonthKey(): string {
-  return monthKey(new Date().toISOString().slice(0, 10));
+  return monthKey(todayIso());
 }
 
 export function expensesInMonth(expenses: Expense[], targetMonthKey: string): Expense[] {
@@ -44,7 +44,7 @@ export interface CategoryTotal {
   category: Category;
   total: number;
   count: number;
-  percent: number; // 0-100, share of the overall total
+  percent: number;
 }
 
 export function totalsByCategory(expenses: Expense[]): CategoryTotal[] {
@@ -72,25 +72,45 @@ export function totalsByCategory(expenses: Expense[]): CategoryTotal[] {
     .sort((a, b) => b.total - a.total);
 }
 
-export interface MonthlyTotal {
-  monthKey: string; // "yyyy-mm"
+export interface DayTotal {
+  date: string; // yyyy-mm-dd
   total: number;
 }
 
-/** Last `months` calendar months (including the current one), oldest first, zero-filled. */
-export function monthlyTotals(expenses: Expense[], months = 6): MonthlyTotal[] {
+/** Every calendar day in [today - days + 1, today], zero-filled, oldest first. */
+export function dailyTotals(expenses: Expense[], days: number): DayTotal[] {
+  const totals = new Map<string, number>();
+  for (const e of expenses) totals.set(e.date, (totals.get(e.date) ?? 0) + e.amount);
+
   const now = new Date();
-  const keys: string[] = [];
-  for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  const out: DayTotal[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    out.push({ date: iso, total: totals.get(iso) ?? 0 });
   }
+  return out;
+}
 
-  const totals = new Map<string, number>(keys.map((k) => [k, 0]));
-  for (const e of expenses) {
-    const k = monthKey(e.date);
-    if (totals.has(k)) totals.set(k, (totals.get(k) ?? 0) + e.amount);
+/**
+ * Consecutive days, ending today, spent at or under `dailyBudget`. A day
+ * with no logged expenses counts as a win (a genuine no-spend day is the
+ * best possible outcome, not an unknown). Returns 0 if no budget is set or
+ * today itself is already over.
+ */
+export function currentStreak(expenses: Expense[], dailyBudget: number | null): number {
+  if (dailyBudget === null || dailyBudget < 0) return 0;
+  const totals = new Map<string, number>();
+  for (const e of expenses) totals.set(e.date, (totals.get(e.date) ?? 0) + e.amount);
+
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 3650; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const total = totals.get(iso) ?? 0;
+    if (total <= dailyBudget) streak += 1;
+    else break;
   }
-
-  return keys.map((k) => ({ monthKey: k, total: totals.get(k) ?? 0 }));
+  return streak;
 }

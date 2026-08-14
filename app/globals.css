@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------- */
-/* Design tokens — validated categorical/status palette, see the dataviz  */
-/* skill reference. Light values are default; dark values swap in under   */
-/* prefers-color-scheme so every `bg-surface` / `text-secondary` / etc.   */
-/* utility below responds to the OS setting automatically.                */
+/* Design tokens. Categorical + sequential ramps are the validated dataviz */
+/* reference palette (colorblind-checked); "accent" is Hourglass's own     */
+/* warm sand hue, contrast-checked against its own foreground below.       */
+/* Dark values swap in under prefers-color-scheme, so `bg-surface` /       */
+/* `text-secondary` / etc. respond to the OS setting with zero JS.         */
 /* ---------------------------------------------------------------------- */
 :root {
   color-scheme: light;
@@ -22,8 +23,9 @@
   --gridline: #e1e0d9;
   --baseline: #c3c2b7;
 
-  --accent: #2a78d6;
-  --accent-hover: #1c5cab;
+  /* Sand accent - Hourglass's brand color, not part of the data palette. */
+  --accent: #a3620f;
+  --accent-hover: #8a5209;
   --accent-foreground: #ffffff;
 
   --status-good: #0ca30c;
@@ -37,6 +39,14 @@
   --cat-shopping: #eda100;
   --cat-bills: #e87ba4;
   --cat-other: #008300;
+
+  /* Sequential blue ramp, used only by the heatmap calendar. Ordinal use ->
+     never lighter than step 250 on this (light) surface. */
+  --seq-250: #86b6ef;
+  --seq-350: #5598e7;
+  --seq-450: #2a78d6;
+  --seq-550: #1c5cab;
+  --seq-600: #184f95;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,9 +66,9 @@
     --gridline: #2c2c2a;
     --baseline: #383835;
 
-    --accent: #3987e5;
-    --accent-hover: #6da7ec;
-    --accent-foreground: #ffffff;
+    --accent: #e0942f;
+    --accent-hover: #eaa94f;
+    --accent-foreground: #1a1100;
 
     --status-good: #0ca30c;
     --status-warning: #fab219;
@@ -71,6 +81,13 @@
     --cat-shopping: #c98500;
     --cat-bills: #d55181;
     --cat-other: #008300;
+
+    /* Ordinal use on dark -> never darker than step 600. */
+    --seq-250: #86b6ef;
+    --seq-350: #5598e7;
+    --seq-450: #2a78d6;
+    --seq-550: #1c5cab;
+    --seq-600: #184f95;
   }
 }
 
@@ -112,7 +129,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Native date/number inputs should track the design tokens, not the UA default. */
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.6;
