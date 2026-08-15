@@ -66,9 +66,16 @@ npm run lint    # ESLint
 4. **Full form, edit, delete** - use the list icon next to *Log it* to open
    the complete form (with a live "≈ this many minutes of your life" preview
    as you type an amount). Edit or delete any row from the Expenses table.
-5. **Filters & export** - search, filter by category/date range, sort, then
+5. **Custom categories** - in that form, pick *+ Add new category…* from the
+   Category dropdown, name it (e.g. "Subscriptions"), and confirm it's
+   selected and shows up immediately in the filter bar and "Where your time
+   goes." Typing that name into quick-capture (e.g. `"9.99 subscriptions"`)
+   should now match it automatically. The first two custom categories get
+   their own color; a third still works, just with a neutral badge color
+   instead of a new one (see `lib/categories.ts` for why).
+6. **Filters & export** - search, filter by category/date range, sort, then
    export - the CSV includes exactly the filtered rows plus an Hours column.
-6. **Responsiveness** - resize the window; the heatmap scrolls horizontally,
+7. **Responsiveness** - resize the window; the heatmap scrolls horizontally,
    the table becomes cards, and the nav collapses into a hamburger menu.
 
 ## Project structure
@@ -85,12 +92,13 @@ components/
   layout/                  Header/nav
   ui/                      Button, Card, Field, EmptyState, Skeleton, ConfirmDialog, Portal
 hooks/
-  useExpenses.ts, useSettings.ts   useSyncExternalStore-backed, no Context needed
+  useExpenses.ts, useSettings.ts, useCategories.ts   useSyncExternalStore-backed, no Context needed
 lib/
   time-cost.ts             The core reframe: dollars -> hours of work
   parse-expense.ts         The free-text quick-capture parser
-  expenseStore.ts, settingsStore.ts, storage.ts, csv.ts, format.ts, validation.ts,
-  expense-utils.ts (incl. heatmap bucketing + streak calc), types.ts, categories.ts
+  categories.ts             Built-in category metadata + resolveCategoryMeta (built-in or custom)
+  expenseStore.ts, settingsStore.ts, customCategoryStore.ts, storage.ts, csv.ts, format.ts,
+  validation.ts, expense-utils.ts (incl. heatmap bucketing + streak calc), types.ts
 ```
 
 ## Notes

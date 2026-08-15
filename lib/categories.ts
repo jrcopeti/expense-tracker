@@ -5,12 +5,13 @@ import {
   ShoppingBag,
   Receipt,
   MoreHorizontal,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
-import type { Category } from "./types";
+import { CATEGORIES, type BuiltInCategory, type CustomCategory } from "./types";
 
-interface CategoryMeta {
-  label: Category;
+export interface CategoryMeta {
+  label: string;
   icon: LucideIcon;
   /** CSS custom property that resolves to the right hex for the active color scheme. */
   cssVar: string;
@@ -18,7 +19,7 @@ interface CategoryMeta {
   keywords: string[];
 }
 
-export const CATEGORY_META: Record<Category, CategoryMeta> = {
+export const CATEGORY_META: Record<BuiltInCategory, CategoryMeta> = {
   Food: {
     label: "Food",
     icon: Utensils,
@@ -72,3 +73,50 @@ export const CATEGORY_META: Record<Category, CategoryMeta> = {
     keywords: [],
   },
 };
+
+/**
+ * The two extra fixed hues (violet, red) reserved for user-created
+ * categories - slots 7-8 of the same validated, colorblind-checked
+ * categorical order the six built-ins use (slots 1-6). Assigned once per
+ * `CustomCategory` at creation (`colorSlot`) and never reassigned.
+ *
+ * This is a hard cap, not a starting point: a palette's colorblind
+ * separation is only validated for its documented, fixed-order hues, so a
+ * 9th distinct color is never generated on the fly. Categories beyond the
+ * first two custom ones use `FALLBACK_CATEGORY_CSS_VAR` instead - told
+ * apart by label (and icon), not by a color that was never checked against
+ * the rest of the set.
+ */
+export const CUSTOM_CATEGORY_COLOR_VARS = ["var(--cat-custom-1)", "var(--cat-custom-2)"] as const;
+
+/** Neutral, mode-invariant color for a category with no reserved slot left, or for a deleted category an old expense still references. */
+export const FALLBACK_CATEGORY_CSS_VAR = "var(--text-muted)";
+
+/** Icon shared by every user-created category - identity is carried by the label, not a per-category icon pick. */
+const CUSTOM_CATEGORY_ICON: LucideIcon = Tag;
+
+export function isBuiltInCategory(id: string): id is BuiltInCategory {
+  return (CATEGORIES as readonly string[]).includes(id);
+}
+
+/**
+ * Resolves any category id - built-in or custom - to something safe to
+ * render. Falls back gracefully (generic tag icon, muted color, raw id as
+ * label) for an id that matches neither, which happens when an expense
+ * still references a custom category that was since deleted.
+ */
+export function resolveCategoryMeta(id: string, customCategories: CustomCategory[]): CategoryMeta {
+  if (isBuiltInCategory(id)) return CATEGORY_META[id];
+
+  const custom = customCategories.find((c) => c.id === id);
+  if (!custom) {
+    return { label: id, icon: CUSTOM_CATEGORY_ICON, cssVar: FALLBACK_CATEGORY_CSS_VAR, keywords: [] };
+  }
+
+  return {
+    label: custom.label,
+    icon: CUSTOM_CATEGORY_ICON,
+    cssVar: custom.colorSlot === null ? FALLBACK_CATEGORY_CSS_VAR : CUSTOM_CATEGORY_COLOR_VARS[custom.colorSlot],
+    keywords: custom.keywords,
+  };
+}

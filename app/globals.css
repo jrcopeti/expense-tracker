@@ -40,6 +40,15 @@
   --cat-bills: #e87ba4;
   --cat-other: #008300;
 
+  /* Slots 7-8 of the same validated 8-hue categorical set (see the six
+     built-in --cat-* above, which are slots 1-6) - reserved for the first
+     two user-created categories. The set is capped at 8: a 9th color is
+     never generated, since only this fixed, colorblind-checked order is
+     validated. Custom categories beyond the first two fall back to
+     --text-muted and are told apart by label (and icon), not color. */
+  --cat-custom-1: #4a3aa7;
+  --cat-custom-2: #e34948;
+
   /* Sequential blue ramp, used only by the heatmap calendar. Ordinal use ->
      never lighter than step 250 on this (light) surface. */
   --seq-250: #86b6ef;
@@ -82,6 +91,9 @@
     --cat-bills: #d55181;
     --cat-other: #008300;
 
+    --cat-custom-1: #9085e9;
+    --cat-custom-2: #e66767;
+
     /* Ordinal use on dark -> never darker than step 600. */
     --seq-250: #86b6ef;
     --seq-350: #5598e7;
@@ -119,6 +131,8 @@
   --color-cat-shopping: var(--cat-shopping);
   --color-cat-bills: var(--cat-bills);
   --color-cat-other: var(--cat-other);
+  --color-cat-custom-1: var(--cat-custom-1);
+  --color-cat-custom-2: var(--cat-custom-2);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

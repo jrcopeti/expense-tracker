@@ -3,7 +3,7 @@
 import { Clock } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CATEGORY_META } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency } from "@/lib/format";
 import { amountToHours, formatHours } from "@/lib/time-cost";
 import type { CategoryTotal } from "@/lib/expense-utils";
@@ -15,6 +15,7 @@ interface CategoryTimeChartProps {
 }
 
 export function CategoryTimeChart({ data, settings }: CategoryTimeChartProps) {
+  const { metaOf } = useCategories();
   const configured = amountToHours(1, settings) !== null;
   const rows = data.map((d) => ({ ...d, hours: amountToHours(d.total, settings) }));
   const maxValue = Math.max(1, ...rows.map((r) => (configured ? r.hours ?? 0 : r.total)));
@@ -35,13 +36,13 @@ export function CategoryTimeChart({ data, settings }: CategoryTimeChartProps) {
           {rows.map((row) => {
             const value = configured ? row.hours ?? 0 : row.total;
             const widthPercent = Math.max(4, (value / maxValue) * 100);
-            const meta = CATEGORY_META[row.category];
+            const meta = metaOf(row.category);
             return (
               <li key={row.category} className="flex items-center gap-3">
-                <span className="w-[92px] shrink-0 truncate text-xs font-medium text-secondary">{row.category}</span>
+                <span className="w-[92px] shrink-0 truncate text-xs font-medium text-secondary">{meta.label}</span>
                 <div
                   className="relative h-5 flex-1 min-w-0"
-                  title={`${row.category}: ${formatCurrency(row.total)}${row.hours !== null ? ` (${formatHours(row.hours)})` : ""}`}
+                  title={`${meta.label}: ${formatCurrency(row.total)}${row.hours !== null ? ` (${formatHours(row.hours)})` : ""}`}
                 >
                   <div className="h-5 rounded-r" style={{ width: `${widthPercent}%`, backgroundColor: meta.cssVar }} />
                 </div>

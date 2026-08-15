@@ -1,4 +1,4 @@
-import { CATEGORIES, type ExpenseInput } from "./types";
+import type { ExpenseInput } from "./types";
 
 export interface ExpenseFormValues {
   date: string;
@@ -11,7 +11,7 @@ export type FormErrors = Partial<Record<keyof ExpenseFormValues, string>>;
 
 const MAX_AMOUNT = 1_000_000;
 
-export function validateExpense(values: ExpenseFormValues): FormErrors {
+export function validateExpense(values: ExpenseFormValues, validCategoryIds: string[]): FormErrors {
   const errors: FormErrors = {};
 
   if (!values.date) {
@@ -40,7 +40,7 @@ export function validateExpense(values: ExpenseFormValues): FormErrors {
 
   if (!values.category) {
     errors.category = "Choose a category.";
-  } else if (!CATEGORIES.includes(values.category as (typeof CATEGORIES)[number])) {
+  } else if (!validCategoryIds.includes(values.category)) {
     errors.category = "Choose a valid category.";
   }
 
@@ -94,4 +94,17 @@ export function validateSettings(values: SettingsFormValues): SettingsFormErrors
   }
 
   return errors;
+}
+
+const MAX_CATEGORY_LABEL_LENGTH = 30;
+
+/** Returns an error message, or null if the label is fine to create as a new category. */
+export function validateCategoryLabel(label: string, existingLabels: string[]): string | null {
+  const trimmed = label.trim();
+  if (!trimmed) return "Enter a category name.";
+  if (trimmed.length > MAX_CATEGORY_LABEL_LENGTH) return `Keep it under ${MAX_CATEGORY_LABEL_LENGTH} characters.`;
+  if (existingLabels.some((l) => l.toLowerCase() === trimmed.toLowerCase())) {
+    return "That category already exists.";
+  }
+  return null;
 }

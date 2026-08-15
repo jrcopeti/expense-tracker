@@ -1,7 +1,8 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { CATEGORIES, DEFAULT_FILTERS, type ExpenseFilters, type SortKey } from "@/lib/types";
+import { DEFAULT_FILTERS, type ExpenseFilters, type SortKey } from "@/lib/types";
+import { useCategories } from "@/hooks/useCategories";
 import { fieldClasses } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 
@@ -18,6 +19,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 ];
 
 export function FilterBar({ filters, onChange }: FilterBarProps) {
+  const { options } = useCategories();
   const isActive =
     filters.search !== "" || filters.category !== "All" || filters.startDate !== "" || filters.endDate !== "";
 
@@ -56,9 +58,9 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
             className={fieldClasses()}
           >
             <option value="All">All categories</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {options.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.meta.label}
               </option>
             ))}
           </select>

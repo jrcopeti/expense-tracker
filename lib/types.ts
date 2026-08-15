@@ -7,7 +7,32 @@ export const CATEGORIES = [
   "Other",
 ] as const;
 
-export type Category = (typeof CATEGORIES)[number];
+/** One of the six built-in categories, always present. */
+export type BuiltInCategory = (typeof CATEGORIES)[number];
+
+/**
+ * A built-in category id or a user-created one (`CustomCategory.id`). Kept
+ * as `string` rather than a closed union since custom categories are added
+ * at runtime - see `lib/categories.ts`'s `resolveCategoryMeta` for how an
+ * id (built-in or custom) resolves to a label/icon/color.
+ */
+export type Category = string;
+
+/**
+ * A category a user created at runtime, persisted alongside expenses.
+ * `colorSlot` is assigned once at creation from the two reserved
+ * categorical color slots (see `app/globals.css`'s `--cat-custom-*`) and
+ * never reassigned - `null` once both are taken, meaning this category
+ * renders with the neutral fallback color instead of a unique hue (see
+ * `lib/categories.ts` for why a fixed cap, not a generated color).
+ */
+export interface CustomCategory {
+  id: string;
+  label: string;
+  colorSlot: 0 | 1 | null;
+  keywords: string[];
+  createdAt: string;
+}
 
 export interface Expense {
   id: string;
