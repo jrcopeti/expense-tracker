@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { LayoutDashboard, Receipt, Menu, X, Hourglass, Settings } from "lucide-react";
+import { LayoutDashboard, Receipt, Store, Menu, X, Hourglass, Settings } from "lucide-react";
 import clsx from "clsx";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 
 const NAV_LINKS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/expenses", label: "Expenses", icon: Receipt },
+  { href: "/vendors", label: "Vendors", icon: Store },
 ] as const;
 
 export function Header() {
