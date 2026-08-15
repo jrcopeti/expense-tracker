@@ -1,11 +1,16 @@
+"use client";
+
 import { Inbox } from "lucide-react";
 import { CategoryDot } from "@/components/export/CategoryDot";
+import { useCategories } from "@/hooks/useCategories";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { Expense } from "@/lib/types";
 
 const MAX_PREVIEW_ROWS = 6;
 
 export function PreviewTable({ expenses }: { expenses: Expense[] }) {
+  const { metaOf } = useCategories();
+
   if (expenses.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-8 text-center">
@@ -36,7 +41,7 @@ export function PreviewTable({ expenses }: { expenses: Expense[] }) {
               <td className="px-3 py-2">
                 <span className="flex items-center gap-1.5 text-foreground">
                   <CategoryDot category={e.category} />
-                  {e.category}
+                  {metaOf(e.category).label}
                 </span>
               </td>
               <td className="max-w-[140px] truncate px-3 py-2 text-foreground">{e.description}</td>

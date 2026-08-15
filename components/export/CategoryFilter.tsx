@@ -1,6 +1,8 @@
+"use client";
+
 import clsx from "clsx";
-import { CATEGORIES, type Category } from "@/lib/types";
-import { CATEGORY_META } from "@/lib/categories";
+import type { Category } from "@/lib/types";
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategoryFilterProps {
   selected: Category[] | "all";
@@ -9,6 +11,7 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selected, onToggle, onSelectAll }: CategoryFilterProps) {
+  const { options } = useCategories();
   const isAll = selected === "all";
 
   return (
@@ -23,14 +26,13 @@ export function CategoryFilter({ selected, onToggle, onSelectAll }: CategoryFilt
       >
         All categories
       </button>
-      {CATEGORIES.map((category) => {
-        const isSelected = !isAll && selected.includes(category);
-        const meta = CATEGORY_META[category];
+      {options.map(({ id, meta }) => {
+        const isSelected = !isAll && selected.includes(id);
         return (
           <button
-            key={category}
+            key={id}
             type="button"
-            onClick={() => onToggle(category)}
+            onClick={() => onToggle(id)}
             aria-pressed={isSelected}
             className={clsx(
               "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
@@ -42,7 +44,7 @@ export function CategoryFilter({ selected, onToggle, onSelectAll }: CategoryFilt
               style={{ backgroundColor: meta.cssVar }}
               aria-hidden
             />
-            {category}
+            {meta.label}
           </button>
         );
       })}
