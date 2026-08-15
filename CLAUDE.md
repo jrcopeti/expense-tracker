@@ -13,8 +13,8 @@ about how the code is built, not what it does for a user.
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript (`strict`)
 - Tailwind CSS v4 (via `@tailwindcss/postcss`, no `tailwind.config.*`) + `clsx`
 - `lucide-react` icons, `react-hot-toast` for feedback
-- No test framework is configured yet — don't assume one exists. See
-  **Testing** below for the policy on adding one.
+- Vitest (`jsdom` environment) + `@testing-library/react` for tests. See
+  **Testing** below for the policy and conventions.
 
 ## Architecture
 
@@ -83,28 +83,37 @@ This is a forward-looking policy, not a retroactive one — it doesn't
 require backfilling coverage for existing untested code, only covering
 what you touch going forward.
 
-This currently conflicts with the tech-stack note above: no test runner
-is installed yet. Don't let that block you — if a change needs tests and
-none can run yet, add a test framework (e.g. Vitest, consistent with the
-Next.js/Turbopack setup) as part of that same change, then write the
-tests against it. Once a runner exists, add its `npm test` command here
-and drop this caveat.
+Tests run on **Vitest** (`vitest.config.mts`, single `jsdom` environment
+for the whole suite) with `@testing-library/react` for hooks/components.
+Test files are colocated with the code they cover, as `<name>.test.ts(x)`
+next to `<name>.ts(x)` (e.g. `lib/time-cost.test.ts`,
+`hooks/useCategories.test.ts`) — not a parallel `__tests__/` tree.
+
+- **Unit tests** cover pure `lib/` functions directly (see
+  `lib/time-cost.test.ts`, `lib/vendor-utils.test.ts`).
+- **Integration tests** exercise a vanilla store together with real
+  `lib/storage.ts` persistence (`localStorage`, via jsdom) rather than
+  mocking it out, and/or a hook (`useSyncExternalStore`) rendered with
+  `renderHook` on top of that store — see `lib/customCategoryStore.test.ts`
+  and `hooks/useCategories.test.ts` for the pattern. Since the vanilla
+  stores cache state at module scope (see **Architecture**), each test
+  cleans up what it added in `beforeEach`/`afterEach` rather than relying
+  on module isolation between tests in the same file.
 
 **Before committing, the code must compile and its tests must pass.**
-Run `npm run build` (or `tsc --noEmit`) and, once a test runner is set
-up, `npm test` — don't commit on a red build or a failing test.
+Run `npm run build` (or `tsc --noEmit`) and `npm test` — don't commit on
+a red build or a failing test.
 
 ## Commands
 
 ```bash
-npm run dev     # Turbopack dev server
-npm run build   # production build
-npm run start   # run the production build
-npm run lint    # ESLint (eslint-config-next)
+npm run dev         # Turbopack dev server
+npm run build       # production build
+npm run start       # run the production build
+npm run lint        # ESLint (eslint-config-next)
+npm test            # Vitest, single run
+npm run test:watch  # Vitest, watch mode
 ```
-
-There's no `npm test` yet — see **Testing** above for the policy and the
-plan to close that gap.
 
 ## Documentation
 
