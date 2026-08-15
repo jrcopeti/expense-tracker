@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Wallet, Receipt, TrendingUp, Sparkles, Settings as SettingsIcon } from "lucide-react";
+import { Wallet, Receipt, TrendingUp, Sparkles, Settings as SettingsIcon, Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ExportDrawer } from "@/components/export/ExportDrawer";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -38,6 +39,7 @@ export default function DashboardPage() {
 
   const [modalState, setModalState] = useState<{ open: boolean; expense?: Expense }>({ open: false });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const totalSpending = useMemo(() => sumAmount(expenses), [expenses]);
@@ -79,6 +81,12 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-sm text-secondary">Every dollar, measured in the hours it cost you.</p>
         </div>
+        {expenses.length > 0 && (
+          <Button variant="secondary" onClick={() => setIsExportOpen(true)}>
+            <Download className="h-4 w-4" />
+            Export data
+          </Button>
+        )}
       </div>
 
       <div className="mt-6">
@@ -204,6 +212,7 @@ export default function DashboardPage() {
         />
       )}
       {isSettingsOpen && <SettingsModal onClose={() => setIsSettingsOpen(false)} />}
+      {isExportOpen && <ExportDrawer expenses={expenses} onClose={() => setIsExportOpen(false)} />}
     </div>
   );
 }
