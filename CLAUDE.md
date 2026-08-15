@@ -13,7 +13,8 @@ about how the code is built, not what it does for a user.
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript (`strict`)
 - Tailwind CSS v4 (via `@tailwindcss/postcss`, no `tailwind.config.*`) + `clsx`
 - `lucide-react` icons, `react-hot-toast` for feedback
-- No test framework is configured yet — don't assume one exists.
+- No test framework is configured yet — don't assume one exists. See
+  **Testing** below for the policy on adding one.
 
 ## Architecture
 
@@ -75,6 +76,24 @@ about how the code is built, not what it does for a user.
   Where failure is real (storage, parsing untrusted input), handle it
   explicitly and surface it via toast rather than throwing.
 
+## Testing
+
+**From now on, write automated tests for the code you add or change.**
+This is a forward-looking policy, not a retroactive one — it doesn't
+require backfilling coverage for existing untested code, only covering
+what you touch going forward.
+
+This currently conflicts with the tech-stack note above: no test runner
+is installed yet. Don't let that block you — if a change needs tests and
+none can run yet, add a test framework (e.g. Vitest, consistent with the
+Next.js/Turbopack setup) as part of that same change, then write the
+tests against it. Once a runner exists, add its `npm test` command here
+and drop this caveat.
+
+**Before committing, the code must compile and its tests must pass.**
+Run `npm run build` (or `tsc --noEmit`) and, once a test runner is set
+up, `npm test` — don't commit on a red build or a failing test.
+
 ## Commands
 
 ```bash
@@ -84,9 +103,8 @@ npm run start   # run the production build
 npm run lint    # ESLint (eslint-config-next)
 ```
 
-There's no `npm test` — don't invent test-coverage requirements for a
-project that has no test runner installed; flag it as a gap instead of
-silently skipping or silently inventing one.
+There's no `npm test` yet — see **Testing** above for the policy and the
+plan to close that gap.
 
 ## Documentation
 
@@ -106,6 +124,9 @@ one of `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, matching the
 conventional-commit prefix for the change. Examples: `feat/csv-export`,
 `fix/heatmap-timezone-off-by-one`, `docs/csv-export-guide`.
 Then commit your changes to that branch and open a pull request against `main`. The PR commit title should match the branch name, with the shortest possible description, and link to any relevant issues. Once the PR is approved and merged, delete the feature branch.
+
+Before each commit, the code must compile and its tests must pass — see
+**Testing**.
 
 (Branch names can't contain `:` — git reserves it for refspec syntax — so
 this uses `/` as the separator instead of the `feat:`/`fix:` colon form
