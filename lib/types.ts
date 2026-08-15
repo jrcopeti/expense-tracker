@@ -30,6 +30,8 @@ export interface CustomCategory {
   id: string;
   label: string;
   colorSlot: 0 | 1 | null;
+  /** A `CategoryIconId` from `lib/category-icons.ts`, kept as plain `string` here since it's persisted data - resolveCategoryMeta falls back safely if the icon set ever changes. */
+  iconId: string;
   keywords: string[];
   createdAt: string;
 }

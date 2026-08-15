@@ -4,6 +4,7 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import toast from "react-hot-toast";
 import { CATEGORIES, type BuiltInCategory, type CustomCategory } from "@/lib/types";
 import { CATEGORY_META, resolveCategoryMeta, type CategoryMeta } from "@/lib/categories";
+import { DEFAULT_CATEGORY_ICON_ID, type CategoryIconId } from "@/lib/category-icons";
 import { validateCategoryLabel } from "@/lib/validation";
 import * as store from "@/lib/customCategoryStore";
 import { useIsClient } from "./useIsClient";
@@ -41,12 +42,12 @@ export function useCategories() {
   const metaOf = useCallback((id: string) => resolveCategoryMeta(id, customCategories), [customCategories]);
 
   const addCategory = useCallback(
-    (label: string): AddCategoryResult => {
+    (label: string, iconId: CategoryIconId = DEFAULT_CATEGORY_ICON_ID): AddCategoryResult => {
       const existingLabels = [...CATEGORIES, ...customCategories.map((c) => c.label)];
       const error = validateCategoryLabel(label, existingLabels);
       if (error) return { ok: false, error };
 
-      const { category, persisted } = store.addCustomCategory(label);
+      const { category, persisted } = store.addCustomCategory(label, iconId);
       if (!persisted) toast.error(PERSIST_WARNING);
       return { ok: true, category };
     },

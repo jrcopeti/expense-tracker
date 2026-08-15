@@ -67,12 +67,14 @@ npm run lint    # ESLint
    the complete form (with a live "≈ this many minutes of your life" preview
    as you type an amount). Edit or delete any row from the Expenses table.
 5. **Custom categories** - in that form, pick *+ Add new category…* from the
-   Category dropdown, name it (e.g. "Subscriptions"), and confirm it's
-   selected and shows up immediately in the filter bar and "Where your time
-   goes." Typing that name into quick-capture (e.g. `"9.99 subscriptions"`)
-   should now match it automatically. The first two custom categories get
-   their own color; a third still works, just with a neutral badge color
-   instead of a new one (see `lib/categories.ts` for why).
+   Category dropdown, name it (e.g. "Subscriptions"), pick one of the icons
+   in the grid below the name field, and confirm it's selected and shows up
+   immediately - with that icon - in the filter bar, expense list, and
+   "Where your time goes." Typing that name into quick-capture (e.g.
+   `"9.99 subscriptions"`) should now match it automatically. The first two
+   custom categories get their own color; a third still works, just with a
+   neutral badge color instead of a new one (see `lib/categories.ts` for
+   why).
 6. **Filters & export** - search, filter by category/date range, sort, then
    export - the CSV includes exactly the filtered rows plus an Hours column.
 7. **Responsiveness** - resize the window; the heatmap scrolls horizontally,

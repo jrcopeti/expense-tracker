@@ -1,14 +1,6 @@
-import {
-  Utensils,
-  Car,
-  Film,
-  ShoppingBag,
-  Receipt,
-  MoreHorizontal,
-  Tag,
-  type LucideIcon,
-} from "lucide-react";
+import { Utensils, Car, Film, ShoppingBag, Receipt, MoreHorizontal, type LucideIcon } from "lucide-react";
 import { CATEGORIES, type BuiltInCategory, type CustomCategory } from "./types";
+import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON_ID, isCategoryIconId } from "./category-icons";
 
 export interface CategoryMeta {
   label: string;
@@ -92,16 +84,18 @@ export const CUSTOM_CATEGORY_COLOR_VARS = ["var(--cat-custom-1)", "var(--cat-cus
 /** Neutral, mode-invariant color for a category with no reserved slot left, or for a deleted category an old expense still references. */
 export const FALLBACK_CATEGORY_CSS_VAR = "var(--text-muted)";
 
-/** Icon shared by every user-created category - identity is carried by the label, not a per-category icon pick. */
-const CUSTOM_CATEGORY_ICON: LucideIcon = Tag;
-
 export function isBuiltInCategory(id: string): id is BuiltInCategory {
   return (CATEGORIES as readonly string[]).includes(id);
 }
 
+/** The icon for a custom category's `iconId` - falls back to the default for a missing id (categories created before icon selection existed) or an unrecognized one (the icon set changed). */
+function resolveCustomIcon(iconId: string | undefined): LucideIcon {
+  return CATEGORY_ICONS[iconId !== undefined && isCategoryIconId(iconId) ? iconId : DEFAULT_CATEGORY_ICON_ID];
+}
+
 /**
  * Resolves any category id - built-in or custom - to something safe to
- * render. Falls back gracefully (generic tag icon, muted color, raw id as
+ * render. Falls back gracefully (default icon, muted color, raw id as
  * label) for an id that matches neither, which happens when an expense
  * still references a custom category that was since deleted.
  */
@@ -110,12 +104,12 @@ export function resolveCategoryMeta(id: string, customCategories: CustomCategory
 
   const custom = customCategories.find((c) => c.id === id);
   if (!custom) {
-    return { label: id, icon: CUSTOM_CATEGORY_ICON, cssVar: FALLBACK_CATEGORY_CSS_VAR, keywords: [] };
+    return { label: id, icon: resolveCustomIcon(undefined), cssVar: FALLBACK_CATEGORY_CSS_VAR, keywords: [] };
   }
 
   return {
     label: custom.label,
-    icon: CUSTOM_CATEGORY_ICON,
+    icon: resolveCustomIcon(custom.iconId),
     cssVar: custom.colorSlot === null ? FALLBACK_CATEGORY_CSS_VAR : CUSTOM_CATEGORY_COLOR_VARS[custom.colorSlot],
     keywords: custom.keywords,
   };

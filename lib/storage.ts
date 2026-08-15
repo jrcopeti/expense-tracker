@@ -94,6 +94,10 @@ function isValidCustomCategory(value: unknown): value is CustomCategory {
     typeof v.id === "string" &&
     typeof v.label === "string" &&
     (v.colorSlot === 0 || v.colorSlot === 1 || v.colorSlot === null) &&
+    // iconId is optional here (not just absent-safe below) so a category
+    // saved before icon selection existed still loads - resolveCategoryMeta
+    // falls back to the default icon when it's missing.
+    (v.iconId === undefined || typeof v.iconId === "string") &&
     Array.isArray(v.keywords) &&
     typeof v.createdAt === "string"
   );

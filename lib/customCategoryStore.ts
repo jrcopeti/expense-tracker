@@ -1,5 +1,6 @@
 import { CATEGORIES, type CustomCategory } from "./types";
 import { loadCustomCategories, saveCustomCategories } from "./storage";
+import { DEFAULT_CATEGORY_ICON_ID, type CategoryIconId } from "./category-icons";
 
 /** Same tiny vanilla-store-outside-React shape as expenseStore.ts - see its header comment. */
 
@@ -70,13 +71,17 @@ function nextColorSlot(existing: CustomCategory[]): 0 | 1 | null {
  * reassigned once given - see `lib/categories.ts` for why the palette can't
  * just grow another hue for a third.
  */
-export function addCustomCategory(label: string): { category: CustomCategory; persisted: boolean } {
+export function addCustomCategory(
+  label: string,
+  iconId: CategoryIconId = DEFAULT_CATEGORY_ICON_ID,
+): { category: CustomCategory; persisted: boolean } {
   const existing = readCache();
   const trimmed = label.trim();
   const category: CustomCategory = {
     id: uniqueId(trimmed, existing),
     label: trimmed,
     colorSlot: nextColorSlot(existing),
+    iconId,
     keywords: [trimmed.toLowerCase()],
     createdAt: new Date().toISOString(),
   };

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
+import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { Field, fieldClasses } from "@/components/ui/Field";
 import { Portal } from "@/components/ui/Portal";
@@ -21,6 +22,7 @@ import type { Expense } from "@/lib/types";
 import { todayIso } from "@/lib/format";
 import { formatTimeCost } from "@/lib/time-cost";
 import { validateExpense, toExpenseInput, type ExpenseFormValues, type FormErrors } from "@/lib/validation";
+import { CATEGORY_ICONS, CATEGORY_ICON_IDS, DEFAULT_CATEGORY_ICON_ID, type CategoryIconId } from "@/lib/category-icons";
 
 /** Sentinel select value that opens the inline "new category" field instead of setting a category. */
 const NEW_CATEGORY_VALUE = "__new__";
@@ -54,6 +56,7 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryLabel, setNewCategoryLabel] = useState("");
+  const [newCategoryIconId, setNewCategoryIconId] = useState<CategoryIconId>(DEFAULT_CATEGORY_ICON_ID);
   const [newCategoryError, setNewCategoryError] = useState<string | null>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
@@ -91,7 +94,7 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
   }
 
   function handleAddCategory() {
-    const result = addCategory(newCategoryLabel);
+    const result = addCategory(newCategoryLabel, newCategoryIconId);
     if (!result.ok) {
       setNewCategoryError(result.error);
       return;
@@ -99,12 +102,14 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
     handleChange("category", result.category.id);
     setIsAddingCategory(false);
     setNewCategoryLabel("");
+    setNewCategoryIconId(DEFAULT_CATEGORY_ICON_ID);
     setNewCategoryError(null);
   }
 
   function handleCancelAddCategory() {
     setIsAddingCategory(false);
     setNewCategoryLabel("");
+    setNewCategoryIconId(DEFAULT_CATEGORY_ICON_ID);
     setNewCategoryError(null);
   }
 
@@ -241,6 +246,33 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
                   Cancel
                 </Button>
               </div>
+
+              <span className="mt-1 text-xs font-medium text-secondary">Icon</span>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category icon">
+                {CATEGORY_ICON_IDS.map((iconId) => {
+                  const Icon = CATEGORY_ICONS[iconId];
+                  const selected = iconId === newCategoryIconId;
+                  return (
+                    <button
+                      key={iconId}
+                      type="button"
+                      onClick={() => setNewCategoryIconId(iconId)}
+                      aria-pressed={selected}
+                      aria-label={iconId}
+                      title={iconId}
+                      className={clsx(
+                        "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+                        selected
+                          ? "border-accent bg-accent/10 text-accent"
+                          : "border-border text-secondary hover:bg-surface-hover hover:text-foreground",
+                      )}
+                    >
+                      <Icon className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  );
+                })}
+              </div>
+
               {newCategoryError && (
                 <p className="text-xs font-medium text-danger" role="alert">
                   {newCategoryError}
