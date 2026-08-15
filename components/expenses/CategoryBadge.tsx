@@ -1,5 +1,7 @@
+"use client";
+
 import clsx from "clsx";
-import { CATEGORY_META } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import type { Category } from "@/lib/types";
 
 interface CategoryBadgeProps {
@@ -9,7 +11,8 @@ interface CategoryBadgeProps {
 }
 
 export function CategoryBadge({ category, size = "md", className }: CategoryBadgeProps) {
-  const meta = CATEGORY_META[category];
+  const { metaOf } = useCategories();
+  const meta = metaOf(category);
   const Icon = meta.icon;
   const isSmall = size === "sm";
 

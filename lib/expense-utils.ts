@@ -59,15 +59,17 @@ export function totalsByCategory(expenses: Expense[]): CategoryTotal[] {
     totals.set(e.category, entry);
   }
 
-  return CATEGORIES.map((category) => {
-    const entry = totals.get(category)!;
-    return {
+  // Iterate every category that actually showed up (built-in seeds above,
+  // plus any custom one an expense used), not just the six built-ins -
+  // otherwise a custom category's spending would silently vanish from
+  // "Where your time goes" and every other totals-by-category view.
+  return Array.from(totals.entries())
+    .map(([category, entry]) => ({
       category,
       total: entry.total,
       count: entry.count,
       percent: grandTotal > 0 ? (entry.total / grandTotal) * 100 : 0,
-    };
-  })
+    }))
     .filter((c) => c.count > 0)
     .sort((a, b) => b.total - a.total);
 }

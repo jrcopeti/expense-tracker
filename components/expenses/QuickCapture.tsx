@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { CategoryBadge } from "@/components/expenses/CategoryBadge";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useSettings } from "@/hooks/useSettings";
+import { useCategories } from "@/hooks/useCategories";
 import { parseExpenseInput } from "@/lib/parse-expense";
 import { formatCurrency } from "@/lib/format";
 import { formatTimeCost } from "@/lib/time-cost";
@@ -20,12 +21,13 @@ interface QuickCaptureProps {
 export function QuickCapture({ onOpenForm }: QuickCaptureProps) {
   const { addExpense } = useExpenses();
   const { settings } = useSettings();
+  const { customCategories } = useCategories();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const parsed = parseExpenseInput(text);
+    const parsed = parseExpenseInput(text, customCategories);
     if (!parsed) {
       setError("Couldn't find an amount - try “12.50 coffee” or “gas 40”.");
       return;

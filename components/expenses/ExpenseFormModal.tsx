@@ -1,17 +1,31 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
+import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { Field, fieldClasses } from "@/components/ui/Field";
 import { Portal } from "@/components/ui/Portal";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useSettings } from "@/hooks/useSettings";
-import { CATEGORIES, type Expense } from "@/lib/types";
+import { useCategories } from "@/hooks/useCategories";
+import type { Expense } from "@/lib/types";
 import { todayIso } from "@/lib/format";
 import { formatTimeCost } from "@/lib/time-cost";
 import { validateExpense, toExpenseInput, type ExpenseFormValues, type FormErrors } from "@/lib/validation";
+import { CATEGORY_ICONS, CATEGORY_ICON_IDS, DEFAULT_CATEGORY_ICON_ID, type CategoryIconId } from "@/lib/category-icons";
+
+/** Sentinel select value that opens the inline "new category" field instead of setting a category. */
+const NEW_CATEGORY_VALUE = "__new__";
 
 interface ExpenseFormModalProps {
   onClose: () => void;
@@ -37,8 +51,13 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
   // this lazy initializer is all that's needed to start each dialog fresh.
   const { addExpense, updateExpense } = useExpenses();
   const { settings } = useSettings();
+  const { options: categoryOptions, validIds: validCategoryIds, addCategory } = useCategories();
   const [values, setValues] = useState<ExpenseFormValues>(() => valuesFromExpense(expense));
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryLabel, setNewCategoryLabel] = useState("");
+  const [newCategoryIconId, setNewCategoryIconId] = useState<CategoryIconId>(DEFAULT_CATEGORY_ICON_ID);
+  const [newCategoryError, setNewCategoryError] = useState<string | null>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const isEditing = Boolean(expense);
@@ -66,9 +85,46 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
+  function handleCategorySelect(value: string) {
+    if (value === NEW_CATEGORY_VALUE) {
+      setIsAddingCategory(true);
+      return;
+    }
+    handleChange("category", value);
+  }
+
+  function handleAddCategory() {
+    const result = addCategory(newCategoryLabel, newCategoryIconId);
+    if (!result.ok) {
+      setNewCategoryError(result.error);
+      return;
+    }
+    handleChange("category", result.category.id);
+    setIsAddingCategory(false);
+    setNewCategoryLabel("");
+    setNewCategoryIconId(DEFAULT_CATEGORY_ICON_ID);
+    setNewCategoryError(null);
+  }
+
+  function handleCancelAddCategory() {
+    setIsAddingCategory(false);
+    setNewCategoryLabel("");
+    setNewCategoryIconId(DEFAULT_CATEGORY_ICON_ID);
+    setNewCategoryError(null);
+  }
+
+  function handleNewCategoryKeyDown(e: ReactKeyboardEvent<HTMLInputElement>) {
+    // This input lives inside the expense <form> - stop Enter from
+    // submitting that outer form and treat it as "confirm this category" instead.
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddCategory();
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const validationErrors = validateExpense(values);
+    const validationErrors = validateExpense(values, validCategoryIds);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -147,20 +203,83 @@ export function ExpenseFormModal({ onClose, expense }: ExpenseFormModalProps) {
             <select
               id="expense-category"
               value={values.category}
-              onChange={(e) => handleChange("category", e.target.value)}
+              onChange={(e) => handleCategorySelect(e.target.value)}
               className={fieldClasses(Boolean(errors.category))}
               aria-invalid={Boolean(errors.category)}
             >
               <option value="" disabled>
                 Select a category
               </option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {categoryOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.meta.label}
                 </option>
               ))}
+              <option value={NEW_CATEGORY_VALUE}>+ Add new category…</option>
             </select>
           </Field>
+
+          {isAddingCategory && (
+            <div className="-mt-2 flex flex-col gap-1.5 rounded-xl border border-border bg-surface-hover p-3">
+              <label htmlFor="new-category-label" className="text-xs font-medium text-secondary">
+                New category name
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="new-category-label"
+                  type="text"
+                  autoFocus
+                  placeholder="e.g. Subscriptions"
+                  value={newCategoryLabel}
+                  onChange={(e) => {
+                    setNewCategoryLabel(e.target.value);
+                    if (newCategoryError) setNewCategoryError(null);
+                  }}
+                  onKeyDown={handleNewCategoryKeyDown}
+                  className={fieldClasses(Boolean(newCategoryError))}
+                  aria-invalid={Boolean(newCategoryError)}
+                />
+                <Button type="button" size="sm" onClick={handleAddCategory}>
+                  Add
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={handleCancelAddCategory}>
+                  Cancel
+                </Button>
+              </div>
+
+              <span className="mt-1 text-xs font-medium text-secondary">Icon</span>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category icon">
+                {CATEGORY_ICON_IDS.map((iconId) => {
+                  const Icon = CATEGORY_ICONS[iconId];
+                  const selected = iconId === newCategoryIconId;
+                  return (
+                    <button
+                      key={iconId}
+                      type="button"
+                      onClick={() => setNewCategoryIconId(iconId)}
+                      aria-pressed={selected}
+                      aria-label={iconId}
+                      title={iconId}
+                      className={clsx(
+                        "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+                        selected
+                          ? "border-accent bg-accent/10 text-accent"
+                          : "border-border text-secondary hover:bg-surface-hover hover:text-foreground",
+                      )}
+                    >
+                      <Icon className="h-4 w-4" strokeWidth={2} />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {newCategoryError && (
+                <p className="text-xs font-medium text-danger" role="alert">
+                  {newCategoryError}
+                </p>
+              )}
+            </div>
+          )}
 
           <Field label="Description" htmlFor="expense-description" error={errors.description}>
             <input

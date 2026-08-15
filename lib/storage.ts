@@ -1,8 +1,9 @@
-import type { Expense, Settings } from "./types";
+import type { CustomCategory, Expense, Settings } from "./types";
 import { DEFAULT_SETTINGS } from "./types";
 
 const EXPENSES_KEY = "hourglass:expenses:v1";
 const SETTINGS_KEY = "hourglass:settings:v1";
+const CUSTOM_CATEGORIES_KEY = "hourglass:custom-categories:v1";
 
 export function loadExpenses(): Expense[] {
   if (typeof window === "undefined") return [];
@@ -60,5 +61,44 @@ function isValidExpense(value: unknown): value is Expense {
     typeof v.amount === "number" &&
     typeof v.category === "string" &&
     typeof v.description === "string"
+  );
+}
+
+export function loadCustomCategories(): CustomCategory[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isValidCustomCategory);
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomCategories(categories: CustomCategory[]): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    window.localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(categories));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isValidCustomCategory(value: unknown): value is CustomCategory {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.id === "string" &&
+    typeof v.label === "string" &&
+    (v.colorSlot === 0 || v.colorSlot === 1 || v.colorSlot === null) &&
+    // iconId is optional here (not just absent-safe below) so a category
+    // saved before icon selection existed still loads - resolveCategoryMeta
+    // falls back to the default icon when it's missing.
+    (v.iconId === undefined || typeof v.iconId === "string") &&
+    Array.isArray(v.keywords) &&
+    typeof v.createdAt === "string"
   );
 }

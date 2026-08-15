@@ -1,4 +1,4 @@
-import { CATEGORIES, type Category } from "./types";
+import { CATEGORIES, type Category, type CustomCategory } from "./types";
 import { CATEGORY_META } from "./categories";
 import { isoDaysAgo, todayIso } from "./format";
 
@@ -22,8 +22,13 @@ const DAY_KEYWORDS: Array<[pattern: RegExp, resolve: () => string]> = [
  * amount could be found at all - everything else always resolves to
  * *something* (category defaults to "Other", date defaults to today) so the
  * result is always safe to hand to the edit form for a one-click fix.
+ *
+ * `customCategories` is matched the same way as the built-ins - a category
+ * created with the label "Subscriptions" is auto-keyworded with
+ * "subscriptions" (see `lib/customCategoryStore.ts`), so typing that word
+ * matches it with no extra setup.
  */
-export function parseExpenseInput(raw: string): ParsedExpense | null {
+export function parseExpenseInput(raw: string, customCategories: CustomCategory[] = []): ParsedExpense | null {
   const input = raw.trim();
   if (!input) return null;
 
@@ -54,14 +59,19 @@ export function parseExpenseInput(raw: string): ParsedExpense | null {
   }
 
   // 3. Category: longest matching keyword wins (so "water bill" beats a
-  // shorter accidental collision).
+  // shorter accidental collision). Built-ins and custom categories are
+  // checked the same way, over the same combined pool of keywords.
   const lower = withoutAmount.toLowerCase();
+  const candidates: Array<{ id: Category; keywords: string[] }> = [
+    ...CATEGORIES.map((cat) => ({ id: cat as Category, keywords: CATEGORY_META[cat].keywords })),
+    ...customCategories.map((c) => ({ id: c.id, keywords: c.keywords })),
+  ];
   let category: Category = "Other";
   let matchedKeyword: string | null = null;
-  for (const cat of CATEGORIES) {
-    for (const keyword of CATEGORY_META[cat].keywords) {
+  for (const { id, keywords } of candidates) {
+    for (const keyword of keywords) {
       if (lower.includes(keyword) && (!matchedKeyword || keyword.length > matchedKeyword.length)) {
-        category = cat;
+        category = id;
         matchedKeyword = keyword;
       }
     }
