@@ -1,4 +1,9 @@
-# Document Feature Command
+---
+name: document-feature
+description: Generate paired documentation for a feature — one technical doc at docs/dev/{slug}-implementation.md and one user-facing guide at docs/user/how-to-{slug}.md, cross-linked, with screenshots captured from the running app.
+when_to_use: Use when asked to document a feature, write docs for a feature, or produce a how-to guide for this repo.
+argument-hint: "[feature-name]"
+---
 
 Generate paired documentation — one technical, one user-facing — for the
 feature named **$ARGUMENTS**.
@@ -25,6 +30,7 @@ directory, treat that as backend too.
 ### 2. Classify the feature
 
 Based on which layers the matched files live in:
+
 - **Frontend-only** — only `components/`, `app/**/page.tsx`/`layout.tsx`, or
   presentational hooks are touched.
 - **Data-layer ("backend")** — only `lib/*Store.ts`, `lib/storage.ts`,
@@ -49,6 +55,7 @@ still needs the technical doc).
 ### 4. Capture screenshots for the user doc
 
 Try this first, don't skip straight to placeholders:
+
 1. Use the `run` skill to launch the app.
 2. Use `claude-in-chrome` to navigate to the relevant screen(s) and capture
    one screenshot per step of the user walkthrough.
@@ -72,7 +79,7 @@ example inputs, describe what confirms success) and its "Project structure"
 section is the model for dev-doc terseness (file paths, one line of intent
 each, no filler).
 
-## Output Requirements
+## Output requirements
 
 Generate exactly two files:
 
@@ -83,6 +90,7 @@ Generate exactly two files:
   `how-to-{slug}.md` using the slug from step 1.
 
 **`docs/dev/{slug}-implementation.md`** must include:
+
 - One-line summary and the classification from step 2.
 - Relevant files, each as `path:line` with a one-line note on its role.
 - Data flow / state shape touched (reference the actual types from
@@ -96,6 +104,7 @@ Generate exactly two files:
 - A "Related docs" list from step 3.
 
 **`docs/user/how-to-{slug}.md`** must include:
+
 - A one-sentence plain-language description of what the feature does for
   the user (no implementation detail).
 - Numbered step-by-step instructions, each with a screenshot or placeholder
