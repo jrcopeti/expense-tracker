@@ -13,7 +13,8 @@ about how the code is built, not what it does for a user.
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript (`strict`)
 - Tailwind CSS v4 (via `@tailwindcss/postcss`, no `tailwind.config.*`) + `clsx`
 - `lucide-react` icons, `react-hot-toast` for feedback
-- No test framework is configured yet — don't assume one exists.
+- Vitest (`jsdom` environment) + `@testing-library/react` for tests. See
+  **Testing** below for the policy and conventions.
 
 ## Architecture
 
@@ -75,18 +76,44 @@ about how the code is built, not what it does for a user.
   Where failure is real (storage, parsing untrusted input), handle it
   explicitly and surface it via toast rather than throwing.
 
+## Testing
+
+**From now on, write automated tests for the code you add or change.**
+This is a forward-looking policy, not a retroactive one — it doesn't
+require backfilling coverage for existing untested code, only covering
+what you touch going forward.
+
+Tests run on **Vitest** (`vitest.config.mts`, single `jsdom` environment
+for the whole suite) with `@testing-library/react` for hooks/components.
+Test files are colocated with the code they cover, as `<name>.test.ts(x)`
+next to `<name>.ts(x)` (e.g. `lib/time-cost.test.ts`,
+`hooks/useCategories.test.ts`) — not a parallel `__tests__/` tree.
+
+- **Unit tests** cover pure `lib/` functions directly (see
+  `lib/time-cost.test.ts`, `lib/vendor-utils.test.ts`).
+- **Integration tests** exercise a vanilla store together with real
+  `lib/storage.ts` persistence (`localStorage`, via jsdom) rather than
+  mocking it out, and/or a hook (`useSyncExternalStore`) rendered with
+  `renderHook` on top of that store — see `lib/customCategoryStore.test.ts`
+  and `hooks/useCategories.test.ts` for the pattern. Since the vanilla
+  stores cache state at module scope (see **Architecture**), each test
+  cleans up what it added in `beforeEach`/`afterEach` rather than relying
+  on module isolation between tests in the same file.
+
+**Before committing, the code must compile and its tests must pass.**
+Run `npm run build` (or `tsc --noEmit`) and `npm test` — don't commit on
+a red build or a failing test.
+
 ## Commands
 
 ```bash
-npm run dev     # Turbopack dev server
-npm run build   # production build
-npm run start   # run the production build
-npm run lint    # ESLint (eslint-config-next)
+npm run dev         # Turbopack dev server
+npm run build       # production build
+npm run start       # run the production build
+npm run lint        # ESLint (eslint-config-next)
+npm test            # Vitest, single run
+npm run test:watch  # Vitest, watch mode
 ```
-
-There's no `npm test` — don't invent test-coverage requirements for a
-project that has no test runner installed; flag it as a gap instead of
-silently skipping or silently inventing one.
 
 ## Documentation
 
@@ -106,6 +133,9 @@ one of `feat`, `fix`, `chore`, `refactor`, `docs`, `test`, matching the
 conventional-commit prefix for the change. Examples: `feat/csv-export`,
 `fix/heatmap-timezone-off-by-one`, `docs/csv-export-guide`.
 Then commit your changes to that branch and open a pull request against `main`. The PR commit title should match the branch name, with the shortest possible description, and link to any relevant issues. Once the PR is approved and merged, delete the feature branch.
+
+Before each commit, the code must compile and its tests must pass — see
+**Testing**.
 
 (Branch names can't contain `:` — git reserves it for refspec syntax — so
 this uses `/` as the separator instead of the `feat:`/`fix:` colon form

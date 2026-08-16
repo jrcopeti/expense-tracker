@@ -47,6 +47,7 @@ start typing into the quick-add box.
 npm run build   # production build
 npm run start   # run the production build
 npm run lint    # ESLint
+npm test        # Vitest, single run
 ```
 
 ## Manually testing everything
@@ -105,6 +106,11 @@ lib/
 
 ## Notes
 
+- Tests run on Vitest (`npm test`) and are colocated as `<name>.test.ts(x)`
+  next to the code they cover (e.g. `lib/time-cost.test.ts`,
+  `hooks/useCategories.test.ts`) rather than in a separate `__tests__/`
+  tree — see `CLAUDE.md`'s **Testing** section for the policy and
+  conventions.
 - All overlays (modals, confirm dialogs) render through a `Portal` into
   `document.body`. The header uses `backdrop-blur`, and per the CSS spec that
   creates a new containing block for `position: fixed` descendants - without
