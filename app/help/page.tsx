@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LayoutDashboard, Receipt, ChartPie, Store, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Receipt, ChartPie, Store, Info, type LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 export const metadata: Metadata = {
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 // Deliberately a literal copy of the nav rather than an import of Header's
 // NAV_LINKS: the help copy is prose about each section, so it has to be
 // written and reviewed here anyway, and importing the registry would drag a
-// "use client" component into this static page.
+// "use client" component into this static page. Every nav section is listed
+// except Help itself, which is this page.
 const SECTIONS: Array<{ href: string; label: string; icon: LucideIcon; summary: string; details: string[] }> = [
   {
     href: "/",
@@ -57,6 +58,16 @@ const SECTIONS: Array<{ href: string; label: string; icon: LucideIcon; summary: 
     details: [
       "Vendor names are read from each expense's description, so no extra data entry is needed.",
       "Your top 25 vendors, each with its number of expenses, share of spending, and most recent date.",
+    ],
+  },
+  {
+    href: "/about",
+    label: "About",
+    icon: Info,
+    summary: "What Hourglass is and why it prices spending in hours instead of dollars.",
+    details: [
+      "The idea behind the app: every amount is also the time you spent earning it.",
+      "A note on where your data lives — this browser, with no account and no server.",
     ],
   },
 ];

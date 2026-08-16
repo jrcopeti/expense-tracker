@@ -13,11 +13,13 @@ describe("HelpPage", () => {
   it("documents every nav section and links it to its route", () => {
     render(<HelpPage />);
 
+    // Every entry in the header's NAV_LINKS except /help, which is this page.
     const expected = [
       { label: "Dashboard", href: "/" },
       { label: "Expenses", href: "/expenses" },
       { label: "Categories", href: "/categories" },
       { label: "Vendors", href: "/vendors" },
+      { label: "About", href: "/about" },
     ];
 
     for (const { label, href } of expected) {
