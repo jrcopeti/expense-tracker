@@ -120,9 +120,13 @@ npm run test:watch  # Vitest, watch mode
 - `README.md` — product description, manual test script, project structure.
 - `docs/dev/*.md` / `docs/user/*.md` — paired technical/user docs generated
   by `/document-feature <name>`.
-- `ai-code-reviews/*.md` — output of `/code-review <file>`.
-- `.claude/commands/*.md` — project slash commands; keep their example
-  file references pointed at real files in *this* repo when editing them.
+- `ai-code-reviews/*.md` — output of `/code-review-expense-tracker <file>`.
+- `.claude/skills/<name>/SKILL.md` — project skills, each invocable as
+  `/<name>` (the command name comes from the directory, not the frontmatter
+  `name`). Keep their example file references pointed at real files in
+  *this* repo when editing them. `parallel-work` and
+  `integrate-parallel-worktrees` set `disable-model-invocation: true`
+  because they create branches and merge — invoke those two by hand.
 
 ## Version control
 
